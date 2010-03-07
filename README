@@ -1,0 +1,121 @@
+= EnumHelper
+
+For columns in Rails models (or attributes in any class) this plugin provides
+support for enumerated values including:
+
+* defining constants
+* defining predicate methods
+* defining other related methods
+* specifying Rails <tt>validates_inclusion_of</tt> validation
+
+This plugin was inspired by other plugins including enum_field and enumerated_attribute.
+
+== Examples
+
+  class Project < ActiveRecord::Base
+    enum_attr :status, ["new", "in progress", "done"]
+  end
+
+  # constants defined
+  Project::STATUSES    #=> ["new", "in progress", "done"]
+  Project::STATUS_NEW  #=> "new"
+  
+  project = Project.new(:status => "new")
+  
+  # predicate methods defined
+  project.status_new?      #=> true
+  project.not_status_new?  #=> false
+  project.status_done?     #=> false
+  
+  # validates_inclusion_of by default
+  project.valid?           #=> true
+  project.status = 'foo'
+  project.valid?           #=> false
+  
+  
+=== Prefix
+
+By default the singular constants and predicate methods use the field as a 
+prefix.  You can specify a different prefix or <tt>:none</tt>.
+
+  class Person < ActiveRecord::Base
+    enum_attr :sex, %w(male female), :prefix => 'gender'
+    enum_attr :size, %w(small medium large), :prefix => 'none'
+  end
+
+  person = Person.new(:sex => 'male', :size => 'small')
+  
+  person.gender_male?  #=> true
+  person.large?        #=> false
+  
+=== Negated Predicate Methods
+
+For every generated method <tt>foo?</tt>, a negated version <tt>not_foo?</tt> is generated:
+
+  class Person < ActiveRecord::Base
+    enum_attr :sex, %w(male female), :prefix => :none
+  end
+
+  person = Person.new(:sex => 'male')
+  
+  person.male?      #=> true
+  person.not_male?  #=> false
+
+=== Related Methods
+
+You can generate related methods (and their negated versions):
+
+  class Person < ActiveRecord::Base
+  
+    enum_attr :child, %w(boy girl) do |e|
+      e.female? 'girl'
+    end
+    
+    enum_attr :size, ['small', 'medium', 'large', 'extra large'] do |e|
+      e.big? ['large', 'extra large']
+    end
+    
+  end
+
+  person = Person.new(:child => 'girl', :size => 'medium')
+
+  person.female?  #=> true
+  person.big?     #=> false
+
+
+=== <tt>validates_inclusion_of</tt>
+
+By default a subclass of ActiveRecord::Base will have its enum's validated.
+You can prevent that by specifying <tt>:skip_validation => true</tt>:
+
+  class Person < ActiveRecord::Base
+
+    enum_attr :gender, %w(male female), :skip_validation => true
+
+  end
+
+You can pass options to +validates_inclusion_of+ by passing them as options to +enum_attr+:
+
+  class Person < ActiveRecord::Base
+
+    enum_attr :gender, %w(male female), :allow_blank => true, :message => 'must be "male" or "female"'
+
+  end
+
+=== Using with non-ActiveRecord Classes
+
+The plugin automatically provides this support for subclasses of ActiveRecord.
+Other classes will need to <tt>include EnumHelper</tt>:
+
+  class Team  # not a subclass of ActiveRecord
+    include EnumHelper
+    
+    enum_attr ...
+  end
+    
+ActiveRecord <tt>validates_inclusion_of</tt> is skipped for non-ActiveRecord
+classes regardless of the <tt>:skip_validation</tt> option.
+
+== Copyright
+
+Copyright (c) 2010 Steve Downey, released under the MIT license
