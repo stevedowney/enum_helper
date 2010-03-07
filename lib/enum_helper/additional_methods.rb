@@ -2,6 +2,7 @@ module EnumHelper #:nodoc:
 
   module AdditionalMethods #:nodoc:
 
+    # This method is a class method on the class defining the enum_helper.
     def define_enum_method(field, method, *args, &block)
       values = [args.first].flatten
       expr = "#{values.inspect}.include?(#{field})"

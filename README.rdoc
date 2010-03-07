@@ -13,7 +13,7 @@ This plugin was inspired by other plugins including enum_field and enumerated_at
 == Examples
 
   class Project < ActiveRecord::Base
-    enum_attr :status, ["new", "in progress", "done"]
+    enum_helper :status, ["new", "in progress", "done"]
   end
 
   # constants defined
@@ -39,8 +39,8 @@ By default the singular constants and predicate methods use the field as a
 prefix.  You can specify a different prefix or <tt>:none</tt>.
 
   class Person < ActiveRecord::Base
-    enum_attr :sex, %w(male female), :prefix => 'gender'
-    enum_attr :size, %w(small medium large), :prefix => 'none'
+    enum_helper :sex, %w(male female), :prefix => 'gender'
+    enum_helper :size, %w(small medium large), :prefix => 'none'
   end
 
   person = Person.new(:sex => 'male', :size => 'small')
@@ -53,7 +53,7 @@ prefix.  You can specify a different prefix or <tt>:none</tt>.
 For every generated method <tt>foo?</tt>, a negated version <tt>not_foo?</tt> is generated:
 
   class Person < ActiveRecord::Base
-    enum_attr :sex, %w(male female), :prefix => :none
+    enum_helper :sex, %w(male female), :prefix => :none
   end
 
   person = Person.new(:sex => 'male')
@@ -67,11 +67,11 @@ You can generate related methods (and their negated versions):
 
   class Person < ActiveRecord::Base
   
-    enum_attr :child, %w(boy girl) do |e|
+    enum_helper :child, %w(boy girl) do |e|
       e.female? 'girl'
     end
     
-    enum_attr :size, ['small', 'medium', 'large', 'extra large'] do |e|
+    enum_helper :size, ['small', 'medium', 'large', 'extra large'] do |e|
       e.big? ['large', 'extra large']
     end
     
@@ -90,15 +90,15 @@ You can prevent that by specifying <tt>:skip_validation => true</tt>:
 
   class Person < ActiveRecord::Base
 
-    enum_attr :gender, %w(male female), :skip_validation => true
+    enum_helper :gender, %w(male female), :skip_validation => true
 
   end
 
-You can pass options to +validates_inclusion_of+ by passing them as options to +enum_attr+:
+You can pass options to +validates_inclusion_of+ by passing them as options to +enum_helper+:
 
   class Person < ActiveRecord::Base
 
-    enum_attr :gender, %w(male female), :allow_blank => true, :message => 'must be "male" or "female"'
+    enum_helper :gender, %w(male female), :allow_blank => true, :message => 'must be "male" or "female"'
 
   end
 
@@ -110,7 +110,7 @@ Other classes will need to <tt>include EnumHelper</tt>:
   class Team  # not a subclass of ActiveRecord
     include EnumHelper
     
-    enum_attr ...
+    enum_helper ...
   end
     
 ActiveRecord <tt>validates_inclusion_of</tt> is skipped for non-ActiveRecord

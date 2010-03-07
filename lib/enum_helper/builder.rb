@@ -1,5 +1,6 @@
 module EnumHelper #:nodoc:
   
+  # The Builder class handles the generation of constants and methods.
   class Builder #:nodoc:
     attr_accessor :klass, :field, :values, :options
 
@@ -72,6 +73,8 @@ module EnumHelper #:nodoc:
       end
     end
 
+    # This handles the creation of "extra" methods defined in any block
+    # passed to enum_helper.
     def method_missing(method, *args, &block)
       klass.define_enum_method(field, method, *args, &block)
     end
