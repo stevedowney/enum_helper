@@ -9,8 +9,9 @@ support for enumerated values including:
 * specifying Rails <tt>validates_inclusion_of</tt> validation
 
 Other enum-related plugins that might be a better fit for your needs:
-* enum_field
-* enumerated_attribute.
+* enum_field[http://github.com/jamesgolick/enum_field]
+* enum_field[http://github.com/paraseba/enum_field]
+* enumerated_attribute[http://github.com/jeffp/enumerated_attribute]
 * enumlogic[http://github.com/binarylogic/enumlogic]
 
 == Examples
