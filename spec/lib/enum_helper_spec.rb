@@ -66,4 +66,5 @@ describe EnumHelper do
     @unknown.known?.should be_false
     @unknown.not_known?.should be_true
   end
+  
 end

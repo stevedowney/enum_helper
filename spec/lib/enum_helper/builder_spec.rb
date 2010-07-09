@@ -52,7 +52,7 @@ describe EnumHelper::Builder do
       @has_prefix.plural_constant_name.should == 'STATES'
     end
     
-    it "should no prefix" do
+    it "no prefix" do
       @no_prefix.plural_constant_name.should == 'STATUSES'
     end
     

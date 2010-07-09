@@ -8,7 +8,10 @@ support for enumerated values including:
 * defining other related methods
 * specifying Rails <tt>validates_inclusion_of</tt> validation
 
-This plugin was inspired by other plugins including enum_field and enumerated_attribute.
+Other enum-related plugins that might be a better fit for your needs:
+* enum_field
+* enumerated_attribute.
+* enumlogic[http://github.com/binarylogic/enumlogic]
 
 == Examples
 
