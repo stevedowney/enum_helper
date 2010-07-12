@@ -5,6 +5,7 @@ support for enumerated values including:
 
 * defining constants
 * defining predicate methods
+* defining other constants
 * defining other related methods
 * specifying Rails <tt>validates_inclusion_of</tt> validation
 
@@ -16,76 +17,102 @@ Other enum-related plugins that might be a better fit for your needs:
 
 == Examples
 
-  class Project < ActiveRecord::Base
-    enum_helper :status, ["new", "in progress", "done"]
+=== Simplest Case
+
+  class Person < ActiveRecord::Base
+    enum_helper :sex, %w(male female)
   end
 
-  # constants defined
-  Project::STATUSES    #=> ["new", "in progress", "done"]
-  Project::STATUS_NEW  #=> "new"
-  
-  project = Project.new(:status => "new")
-  
-  # predicate methods defined
-  project.status_new?      #=> true
-  project.not_status_new?  #=> false
-  project.status_done?     #=> false
-  
+  # constants
+
+  Person::SEXES       #=> ["male", "female"]
+  Person::SEX_MALE    #=> "male"
+  Person::SEX_FEMALE  #=> "female"
+
+  guy = Person.new(:sex => SEX_MALE)  #=> #<Person id: nil, sex: "male">
+
+  # predicate methods
+
+  guy.sex_male?                     #=> true
+  guy.sex_female?                   #=> false
+
   # validates_inclusion_of by default
-  project.valid?           #=> true
-  project.status = 'foo'
-  project.valid?           #=> false
+
+  guy.valid?           #=> true
+  guy.status = 'foo'
+  guy.valid?           #=> false
   
   
 === Prefix
 
 By default the singular constants and predicate methods use the field as a 
-prefix.  You can specify a different prefix or <tt>:none</tt>.
+prefix.  You can specify a different prefix or <tt>:none</tt>.  You can also
+specify the name of the plural constants (or let if default to the plural of prefix).
 
   class Person < ActiveRecord::Base
     enum_helper :sex, %w(male female), :prefix => 'gender'
-    enum_helper :size, %w(small medium large), :prefix => 'none'
+    enum_helper :size, %w(small medium large), :prefix => :none
+    enum_helper :hue, %w(red blue), :plural_constant_name => "COLORS"
   end
 
-  person = Person.new(:sex => 'male', :size => 'small')
+  person = Person.new(:sex => 'male', :size => 'small')  #=> #<Person id: nil, sex: "male", size: "small">
   
+  Person::GENDER_MALE  #=> "male"
   person.gender_male?  #=> true
+
+  Person::SMALL        #=> "small"
   person.large?        #=> false
+
+  Person::COLORS       #=> ["red", "blue"]
   
 === Negated Predicate Methods
 
 For every generated method <tt>foo?</tt>, a negated version <tt>not_foo?</tt> is generated:
 
   class Person < ActiveRecord::Base
-    enum_helper :sex, %w(male female), :prefix => :none
+    enum_helper :sex, %w(male female)
   end
 
   person = Person.new(:sex => 'male')
   
-  person.male?      #=> true
-  person.not_male?  #=> false
+  person.sex_male?      #=> true
+  person.sex_not_male?  #=> false
 
 === Related Methods
 
-You can generate related methods (and their negated versions):
+You can generate related methods and constants:
 
   class Person < ActiveRecord::Base
   
-    enum_helper :child, %w(boy girl) do |e|
-      e.female? 'girl'
+    enum_helper :sex, %w(boy girl unknown) do
+      female? 'girl'
+      KNOWN ['boy', 'girl']
     end
     
-    enum_helper :size, ['small', 'medium', 'large', 'extra large'] do |e|
-      e.big? ['large', 'extra large']
+    enum_helper :size, ['small', 'medium', 'large', 'extra large'] do
+      big? ['large', 'extra large']
     end
     
   end
 
+  Person::SEX_KNOWN   #=> ['boy', 'girl']
+
   person = Person.new(:child => 'girl', :size => 'medium')
 
-  person.female?  #=> true
-  person.big?     #=> false
+  person.sex_female?  #=> true
+  person.size_big?    #=> false
 
+If you want to reference a constant, instance variable, or instance method, pass a block:
+
+  class Car < ActiveRecord::Base
+
+    enum_helper :color, %w(red cherry green blue), :prefix => :none do
+      REDS { [RED, CHERRY] }
+      reddish? { REDS.include?(color) }
+      reddish_and_old? { reddish? && age > 20 }
+    end
+  
+  end
 
 === <tt>validates_inclusion_of</tt>
 
@@ -119,6 +146,24 @@ Other classes will need to <tt>include EnumHelper</tt>:
     
 ActiveRecord <tt>validates_inclusion_of</tt> is skipped for non-ActiveRecord
 classes regardless of the <tt>:skip_validation</tt> option.
+
+== Tip
+
+If you are having trouble figuring out what constants and methods are getting generated, try:
+
+  MyClass.constants
+  MyClass.new.methods
+
+or if too much is returned:
+
+  MyClass.constants.grep(/<search term>/i).sort
+  MyClass.new.methods.grep(/<search term>/i).sort
+
+== TODO
+
+* support: not_foo? not 'foo'
+* enum_select(:field)
+* valid? / :allow_nil => true/false
 
 == Copyright
 

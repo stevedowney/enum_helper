@@ -1,70 +1,117 @@
-require File.dirname(__FILE__) + '/../spec_helper'
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+
+class Foo
+  include EnumHelper
+  attr_accessor :sex, :size, :body_color
+
+  enum_helper :sex, ['male', 'female'] do
+    BOY 'boy'
+    Boys {[SEX_MALE, SEX_BOY]}
+    m_word? 'male'
+    girl? ['lass', 'female']
+    fem? { sex == SEX_FEMALE}
+  end
+  
+  enum_helper :size, %w(small large), :prefix => :none do
+    TINY 'tiny'
+    slight? ['small', 'tiny']
+  end
+  
+  enum_helper :body_color, %w(red green blue), :prefix => 'color' do
+    OCEANIC {[COLOR_GREEN, COLOR_BLUE]}
+    starts_with_r? 'red'
+  end
+  
+  enum_helper :pcn, %w(pcn1 pcn2), :plural_constant_name => 'plurals'
+end
 
 describe EnumHelper do
-  before(:all) do
-    module Mod; end
-  end
-
-  before(:each) do
-    Mod.send(:remove_const, "Klass") rescue nil
-    module Mod; class Klass; include EnumHelper; attr_accessor :gender; end; end
-    @klass = Mod::Klass
-  end
   
-  it "default" do
-    @klass.enum_helper(:gender, %w(male female))
-    
-    @klass::GENDERS.should == %w(male female)
-    @klass::GENDER_MALE.should == 'male'
-    @klass::GENDER_FEMALE.should == 'female'
-    
-    @male = @klass.new; @male.gender = 'male'
-    @male.gender_male?.should be_true
-    @male.not_gender_male?.should be_false
-    @male.gender_female?.should be_false
-    @male.not_gender_female?.should be_true
-  end
-  
-  it "prefix" do
-    @klass.enum_helper(:gender, %w(male female), :prefix => 'sex')
-    
-    @klass::SEXES.should == %w(male female)
-    @klass::SEX_MALE.should == 'male'
-    @klass::SEX_FEMALE.should == 'female'
-    
-    @male = @klass.new; @male.gender = 'male'
-    @male.sex_male?.should be_true
-    @male.not_sex_male?.should be_false
-    @male.sex_female?.should be_false
-    @male.not_sex_female?.should be_true
-  end
-  
-  it "no prefix" do
-    @klass.enum_helper(:gender, %w(male female), :prefix => :none)
-
-    @klass::GENDERS.should == %w(male female)
-    @klass::MALE.should == 'male'
-    @klass::FEMALE.should == 'female'
-    
-    @male = @klass.new; @male.gender = 'male'
-    @male.male?.should be_true
-    @male.not_male?.should be_false
-    @male.female?.should be_false
-    @male.not_female?.should be_true
-  end
-  
-  it "additional methods" do
-    @klass.enum_helper(:gender, %w(male female unknown), :prefix => :none) do |e|
-      e.known? %w(male female)
+  describe 'default prefix' do
+    before(:each) do
+      @male = Foo.new; @male.sex = 'male'
+      @female = Foo.new; @female.sex = 'female'
     end
     
-    @male = @klass.new; @male.gender = 'male'
-    @male.known?.should be_true
-    @male.not_known?.should be_false
+    it "plural constant" do
+      Foo::SEXES.should == %w(male female)
+    end
     
-    @unknown = @klass.new; @male.gender = 'unknown'
-    @unknown.known?.should be_false
-    @unknown.not_known?.should be_true
+    it "singular constants" do
+      Foo::SEX_MALE.should == 'male'
+      Foo::SEX_FEMALE.should == 'female'
+    end
+    
+    it "predicate methods" do
+      @male.sex_male?.should be_true
+      @male.sex_female?.should be_false
+    end
+    
+    it "negative predicate methods" do
+      @male.sex_not_male?.should be_false
+      @male.sex_not_female?.should be_true
+    end
+    
+    it "constant" do
+      Foo::SEX_BOY.should == 'boy'
+    end
+    
+    it "constant w/block" do
+      Foo::SEX_Boys.should == %w(male boy)
+    end
+    
+    it "method w/scalar" do
+      @male.sex_m_word?.should be_true
+      @female.sex_m_word?.should be_false
+    end
+    
+    it "method w/array" do
+      @male.sex_girl?.should be_false
+      @female.sex_girl?.should be_true
+    end
+    
+    it "method w/block" do
+      @male.sex_fem?.should be_false
+      @female.sex_fem?.should be_true
+    end
+  end
+
+  describe 'prefix :none' do
+    
+    before(:each) do
+      @small = Foo.new;@small.size = 'small'
+    end
+    
+    it "not have prefix" do
+      Foo::SIZES.should == %w(small large)
+      Foo::SMALL.should == 'small'
+      @small.small?.should be_true
+      @small.not_large?.should be_true
+      Foo::TINY.should == 'tiny'
+      @small.slight?.should be_true
+    end
+  end
+  
+  describe 'prefix' do
+    
+    before(:each) do
+      @red = Foo.new; @red.body_color = 'red'
+    end
+    
+    it "should use prefix" do
+      Foo::COLORS.should == %w(red green blue)
+      Foo::COLOR_RED.should == 'red'
+      @red.color_red?.should be_true
+      @red.color_blue?.should be_false
+      Foo::COLOR_OCEANIC.should == %w(green blue)
+      @red.color_starts_with_r?.should be_true
+    end
+  end
+  
+  describe 'plural constant name' do
+    it "should use plural_constant_name" do
+      Foo::PLURALS.should == %w(pcn1 pcn2)
+    end
   end
   
 end

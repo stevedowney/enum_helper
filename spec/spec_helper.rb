@@ -1,4 +1,6 @@
 require 'rubygems'
 require 'spec'
 require 'active_support'
+require 'active_support/core_ext/object/blank'
+require 'active_support/core_ext/string'
 require File.dirname(__FILE__) + '/../lib/enum_helper'

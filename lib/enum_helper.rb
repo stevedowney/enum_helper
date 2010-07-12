@@ -1,7 +1,5 @@
 dir = File.dirname(__FILE__) + '/enum_helper'
-Dir["#{dir}/**/*"].each do |file|
-  require file
-end
+Dir["#{dir}/**/*"].each { |file| require file }
 
 module EnumHelper #:nodoc:
   
@@ -11,10 +9,8 @@ module EnumHelper #:nodoc:
     #   enum_helper(field, values, options = {}, &block)
     #
     # See the README[link:files/README_rdoc.html] file for complete documentation.
-    def enum_helper(field, values, options = {})
-      builder = EnumHelper::Builder.new(self, field, values, options)
-      builder.build
-      yield builder if block_given?
+    def enum_helper(field, values, options = {}, &block)
+      EnumHelper::Builder.build(self, field, values, options, &block)
     end
 
   end
