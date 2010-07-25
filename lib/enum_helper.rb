@@ -174,6 +174,7 @@ module EnumHelper #:nodoc:
 
   end
   
+  # @private
   def self.included(receiver)
     receiver.extend ClassMethods
   end
