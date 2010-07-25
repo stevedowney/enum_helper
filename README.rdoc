@@ -17,7 +17,7 @@ Other enum-related plugins that might be a better fit for your needs:
 
 == Documentation
 
-Complete documentation at {EnumHelper::ClassMethods#enum_helper}
+API documentation at {http://rdoc.info/projects/stevedowney/enum_helper}
 
 == Example
 
