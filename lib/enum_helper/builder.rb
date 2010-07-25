@@ -130,6 +130,7 @@ module EnumHelper #:nodoc:
       def build(klass, field, values, options, &block)
         builder = new(klass, field, values, options, &block)
         builder.build
+        nil
       end
       
     end
