@@ -52,6 +52,13 @@ describe EnumHelper do
       @male.sex_not_female?.should be_true
     end
     
+    it "bang methods" do
+      @male.sex_male!
+      @male.sex.should == 'male'
+      @male.sex_female!
+      @male.sex.should == 'female'
+    end
+    
     it "constant" do
       Foo::SEX_BOY.should == 'boy'
     end
@@ -87,6 +94,7 @@ describe EnumHelper do
       Foo::SMALL.should == 'small'
       @small.small?.should be_true
       @small.not_large?.should be_true
+      foo = Foo.new; foo.large!;foo.size.should == 'large'
       Foo::TINY.should == 'tiny'
       @small.slight?.should be_true
     end
@@ -102,7 +110,8 @@ describe EnumHelper do
       Foo::COLORS.should == %w(red green blue)
       Foo::COLOR_RED.should == 'red'
       @red.color_red?.should be_true
-      @red.color_blue?.should be_false
+      @red.color_not_red?.should be_false
+      c = Foo.new; c.color_blue!; c.body_color.should == 'blue'
       Foo::COLOR_OCEANIC.should == %w(green blue)
       @red.color_starts_with_r?.should be_true
     end

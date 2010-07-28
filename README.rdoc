@@ -58,6 +58,7 @@ or if too much is returned:
 
 == TODO
 
+* named scopes (:value, :not_value)
 * support: not_foo? not 'foo'
 * enum_select(:field)
 * valid? / :allow_nil => true/false

@@ -16,6 +16,7 @@ module EnumHelper #:nodoc:
       build_plural_constant
       build_singular_constants
       build_predicate_methods
+      build_bang_methods
       build_additional_constants_and_methods
       build_active_record_validations
     end
@@ -47,6 +48,18 @@ module EnumHelper #:nodoc:
       end
     end
 
+    def build_bang_methods
+      values.each do |value|
+        sanitized_value = "#{sanitize(value)}".downcase
+        code = <<-END
+          def #{prefix_}#{sanitized_value}!
+            self.#{field} = #{value.inspect}
+          end
+        END
+        klass.class_eval code
+      end
+    end
+    
     def build_additional_constants_and_methods
       instance_eval(&@block) if @block.present?
     end

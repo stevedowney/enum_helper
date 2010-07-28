@@ -82,6 +82,19 @@ module EnumHelper #:nodoc:
     #   person.sex_male?      #=> true
     #   person.sex_not_male?  #=> false
     # 
+    # @example Assignment (!) methods
+    #
+    #   # Each enumerated value has its own assignment method generated:
+    # 
+    #   class Person < ActiveRecord::Base
+    #     enum_helper :sex, %w(male female)
+    #   end
+    # 
+    #   person = Person.new
+    # 
+    #   person.sex_male!    # same as: person.sex = 'male'
+    #   person.sex_female!  # same as: person.sex = 'female'
+    #
     # @example Related Methods and Constants
     # 
     #   class Person < ActiveRecord::Base
