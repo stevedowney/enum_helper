@@ -17,6 +17,7 @@ module EnumHelper #:nodoc:
       build_singular_constants
       build_predicate_methods
       build_bang_methods
+      build_named_scopes
       build_additional_constants_and_methods
       build_active_record_validations
     end
@@ -60,6 +61,18 @@ module EnumHelper #:nodoc:
       end
     end
     
+    def build_named_scopes
+      if active_record_subclass?
+        puts "is ar sub class"
+        values.each do |value|
+          sanitized_value = "#{sanitize(value)}".downcase
+          puts "#{prefix_}#{sanitized_value}".to_sym
+          klass.send :named_scope, "#{prefix_}#{sanitized_value}".to_sym, :conditions => "#{field} = #{value.inspect}"
+          klass.send :named_scope, "#{prefix_}not_#{sanitized_value}".to_sym, :conditions => "#{field} != #{value.inspect}"
+        end
+      end
+    end
+    
     def build_additional_constants_and_methods
       instance_eval(&@block) if @block.present?
     end
@@ -72,6 +85,10 @@ module EnumHelper #:nodoc:
       end
     end
 
+    def active_record_subclass?
+      klass.ancestors.map(&:to_s).include?("ActiveRecord::Base")
+    end
+    
     def constant?(string)
       string[0,1] =~ /[A-Z]/
     end

@@ -36,6 +36,11 @@ module EnumHelper #:nodoc:
     #   guy.sex_male?                     #=> true
     #   guy.sex_female?                   #=> false
     # 
+    #   # named scopes
+    #
+    #   Person.sex_male      # same as Person.all(:conditions => "sex = 'male'")
+    #   Person.sex_not_male  # same as Person.all(:conditions => "sex != 'male'")
+    #
     #   # validates_inclusion_of by default
     # 
     #   guy.valid?           #=> true
