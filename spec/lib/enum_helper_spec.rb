@@ -1,6 +1,14 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-class Foo
+module ActiveRecord
+  class Base
+    def self.named_scope(*args); end
+    def self.validates_inclusion_of(*args); end
+    def update_attribute(*args); end
+  end
+end
+
+class Foo < ActiveRecord::Base
   include EnumHelper
   attr_accessor :sex, :size, :body_color
 
@@ -52,11 +60,18 @@ describe EnumHelper do
       @male.sex_not_female?.should be_true
     end
     
-    it "bang methods" do
-      @male.sex_male!
+    it "set methods" do
+      @male.sex_set_male
       @male.sex.should == 'male'
-      @male.sex_female!
+      @male.sex_set_female
       @male.sex.should == 'female'
+    end
+    
+    it "set! methods" do
+      @male.should_receive(:update_attribute).with(:sex, 'male')
+      @male.sex_set_male!
+      @male.should_receive(:update_attribute).with(:sex, 'female')
+      @male.sex_set_female!
     end
     
     it "constant" do
@@ -94,7 +109,9 @@ describe EnumHelper do
       Foo::SMALL.should == 'small'
       @small.small?.should be_true
       @small.not_large?.should be_true
-      foo = Foo.new; foo.large!;foo.size.should == 'large'
+      foo = Foo.new; foo.set_large;foo.size.should == 'large'
+      foo.should_receive(:update_attribute).with(:size, 'large')
+      foo.set_large!
       Foo::TINY.should == 'tiny'
       @small.slight?.should be_true
     end
@@ -111,7 +128,9 @@ describe EnumHelper do
       Foo::COLOR_RED.should == 'red'
       @red.color_red?.should be_true
       @red.color_not_red?.should be_false
-      c = Foo.new; c.color_blue!; c.body_color.should == 'blue'
+      c = Foo.new; c.color_set_blue; c.body_color.should == 'blue'
+      c.should_receive(:update_attribute).with(:body_color, 'blue')
+      c.color_set_blue!
       Foo::COLOR_OCEANIC.should == %w(green blue)
       @red.color_starts_with_r?.should be_true
     end

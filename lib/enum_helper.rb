@@ -5,7 +5,7 @@ module EnumHelper #:nodoc:
   
   # See the README[link:files/README_rdoc.html] file for complete documentation.
   module ClassMethods
-    # Define constants, predicate methods, and more for an enumeration.
+    # Define constants, predicate methods, assignment methods, named_scopes and more for an enumeration.
     #
     # @param [Symbol] field attribute on which enumeration is defined
     # @param [Array] values set of values constituting the enumeration
@@ -17,7 +17,7 @@ module EnumHelper #:nodoc:
     # @param [Block] &block where various other helper methods and constants can be defined.  See examples.
     # @return [void]
     # 
-    # @example Simplest Usage
+    # @example 
     #
     #   class Person < ActiveRecord::Base
     #     enum_helper :sex, %w(male female)
@@ -29,23 +29,34 @@ module EnumHelper #:nodoc:
     #   Person::SEX_MALE    #=> "male"
     #   Person::SEX_FEMALE  #=> "female"
     # 
-    #   guy = Person.new(:sex => SEX_MALE)  #=> #<Person id: nil, sex: "male">
+    #   person = Person.new(:sex => SEX_MALE)  #=> #<Person id: nil, sex: "male">
     # 
     #   # predicate methods
     # 
-    #   guy.sex_male?                     #=> true
-    #   guy.sex_female?                   #=> false
+    #   person.sex_male?          #=> true
+    #   person.sex_not_male?      #=> false
+    #   person.sex_female?        #=> false
+    #   person.sex_not_female?    #=> true
     # 
+    #   # assignment methods
+    #
+    #   person.sex_set_male      # person.sex = 'male'
+    #   person.sex_set_male!     # person.update_attribute(:sex, 'male')
+    #   person.sex_set_female    # person.sex = 'female'
+    #   person.sex_set_female!   # person.update_attribute(:sex, 'female')
+    #
     #   # named scopes
     #
-    #   Person.sex_male      # same as Person.all(:conditions => "sex = 'male'")
-    #   Person.sex_not_male  # same as Person.all(:conditions => "sex != 'male'")
+    #   Person.sex_male        # Person.all(:conditions => "sex = 'male'")
+    #   Person.sex_not_male    # Person.all(:conditions => "sex != 'male' or sex is null")
+    #   Person.sex_female      # Person.all(:conditions => "sex = 'female'")
+    #   Person.sex_not_female  # Person.all(:conditions => "sex != 'female' or sex is null")
     #
     #   # validates_inclusion_of by default
     # 
-    #   guy.valid?           #=> true
-    #   guy.status = 'foo'
-    #   guy.valid?           #=> false
+    #   person.valid?           #=> true
+    #   person.status = 'foo'
+    #   person.valid?           #=> false
     # 
     # @example Specify a Prefix
     #   
@@ -73,32 +84,6 @@ module EnumHelper #:nodoc:
     #   end
     # 
     #   Person::COLORS       #=> ["red", "blue"]
-    #
-    # @example Negated Predicate Methods
-    # 
-    #   # For every generated method <tt>foo?</tt>, a negated version <tt>not_foo?</tt> is generated:
-    # 
-    #   class Person < ActiveRecord::Base
-    #     enum_helper :sex, %w(male female)
-    #   end
-    # 
-    #   person = Person.new(:sex => 'male')
-    # 
-    #   person.sex_male?      #=> true
-    #   person.sex_not_male?  #=> false
-    # 
-    # @example Assignment (!) methods
-    #
-    #   # Each enumerated value has its own assignment method generated:
-    # 
-    #   class Person < ActiveRecord::Base
-    #     enum_helper :sex, %w(male female)
-    #   end
-    # 
-    #   person = Person.new
-    # 
-    #   person.sex_male!    # same as: person.sex = 'male'
-    #   person.sex_female!  # same as: person.sex = 'female'
     #
     # @example Related Methods and Constants
     # 
@@ -144,9 +129,11 @@ module EnumHelper #:nodoc:
     # 
     #   class Person < ActiveRecord::Base
     # 
-    #     # :allow_blank and :message passed to validates_inclusion_of
     #     enum_helper :gender, %w(male female), :allow_blank => true, :message => 'must be "male" or "female"'
     # 
+    #     # makes call to
+    #     # validates_inclusion_of :gender, :in => ['male', 'female'], :allow_blank => true, :message => 'must be "male" or "female"'
+    #
     #   end
     #
     # @example Skip <tt>validates_inclusion_of</tt> Validation
@@ -168,24 +155,19 @@ module EnumHelper #:nodoc:
     #
     #   end
     # 
-    #   ActiveRecord validates_inclusion_of is skipped for non-ActiveRecord
-    #   classes regardless of the :skip_validation option.
+    #   # ActiveRecord validates_inclusion_of is skipped for non-ActiveRecord
+    #   # classes regardless of the :skip_validation option.
     # 
-    # == Tip
-    # 
-    # If you are having trouble figuring out what constants and methods are getting generated, try:
+    # @example If you are having trouble figuring out what constants and methods are getting generated, try:
     # 
     #   MyClass.constants
     #   MyClass.new.methods
     # 
-    # or if too much is returned:
+    #   # or if too much is returned:
     # 
     #   MyClass.constants.grep(/<search term>/i).sort
     #   MyClass.new.methods.grep(/<search term>/i).sort
     # 
-    # 
-    #  
-    #
     def enum_helper(field, values, options = {}, &block)
       EnumHelper::Builder.build(self, field, values, options, &block)
     end

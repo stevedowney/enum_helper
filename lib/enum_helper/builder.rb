@@ -16,7 +16,7 @@ module EnumHelper #:nodoc:
       build_plural_constant
       build_singular_constants
       build_predicate_methods
-      build_bang_methods
+      build_set_methods
       build_named_scopes
       build_additional_constants_and_methods
       build_active_record_validations
@@ -49,26 +49,32 @@ module EnumHelper #:nodoc:
       end
     end
 
-    def build_bang_methods
+    def build_set_methods
       values.each do |value|
         sanitized_value = "#{sanitize(value)}".downcase
         code = <<-END
-          def #{prefix_}#{sanitized_value}!
+          def #{prefix_}set_#{sanitized_value}
             self.#{field} = #{value.inspect}
           end
         END
         klass.class_eval code
+        if active_record_subclass?
+          code = <<-END
+            def #{prefix_}set_#{sanitized_value}!
+              update_attribute(:#{field}, #{value.inspect})
+            end
+          END
+          klass.class_eval code
+        end
       end
     end
     
     def build_named_scopes
       if active_record_subclass?
-        puts "is ar sub class"
         values.each do |value|
           sanitized_value = "#{sanitize(value)}".downcase
-          puts "#{prefix_}#{sanitized_value}".to_sym
           klass.send :named_scope, "#{prefix_}#{sanitized_value}".to_sym, :conditions => "#{field} = #{value.inspect}"
-          klass.send :named_scope, "#{prefix_}not_#{sanitized_value}".to_sym, :conditions => "#{field} != #{value.inspect}"
+          klass.send :named_scope, "#{prefix_}not_#{sanitized_value}".to_sym, :conditions => "#{field} != #{value.inspect} or #{field} is null"
         end
       end
     end
